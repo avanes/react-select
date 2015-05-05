@@ -27,6 +27,12 @@ var CountrySelect = React.createClass({
 
 var StatesField = React.createClass({
   displayName: "StatesField",
+  getDefaultProps: function () {
+    return {
+      searchable: true,
+      label: "States:" };
+  },
+
   getInitialState: function () {
     return {
       country: "AU",
@@ -54,9 +60,9 @@ var StatesField = React.createClass({
       React.createElement(
         "label",
         null,
-        "States:"
+        this.props.label
       ),
-      React.createElement(Select, { options: ops, value: this.state.selectValue, onChange: this.updateValue }),
+      React.createElement(Select, { options: ops, value: this.state.selectValue, onChange: this.updateValue, searchable: this.props.searchable }),
       React.createElement(
         "div",
         { className: "switcher" },
@@ -143,6 +149,7 @@ React.render(React.createElement(
   "div",
   null,
   React.createElement(StatesField, null),
+  React.createElement(StatesField, { label: "States (non-searchable):", searchable: false }),
   React.createElement(MultiSelectField, { label: "Multiselect:" }),
   React.createElement(RemoteSelectField, { label: "Remote Options:" })
 ), document.getElementById("example"));

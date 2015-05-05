@@ -1,24 +1,52 @@
 require=(function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
-function classnames() {
-	var args = arguments, classes = [];
-	for (var i = 0; i < args.length; i++) {
-		if (args[i] && 'string' === typeof args[i]) {
-			classes.push(args[i]);
-		} else if ('object' === typeof args[i]) {
-			classes = classes.concat(Object.keys(args[i]).filter(function(cls) {
-				return args[i][cls];
-			}));
+/*!
+  Copyright (c) 2015 Jed Watson.
+  Licensed under the MIT License (MIT), see
+  http://jedwatson.github.io/classnames
+*/
+
+function classNames() {
+	var classes = '';
+	var arg;
+
+	for (var i = 0; i < arguments.length; i++) {
+		arg = arguments[i];
+		if (!arg) {
+			continue;
+		}
+
+		if ('string' === typeof arg || 'number' === typeof arg) {
+			classes += ' ' + arg;
+		} else if (Object.prototype.toString.call(arg) === '[object Array]') {
+			classes += ' ' + classNames.apply(null, arg);
+		} else if ('object' === typeof arg) {
+			for (var key in arg) {
+				if (!arg.hasOwnProperty(key) || !arg[key]) {
+					continue;
+				}
+				classes += ' ' + key;
+			}
 		}
 	}
-	return classes.join(' ') || undefined;
+	return classes.substr(1);
 }
 
-module.exports = classnames;
+// safely export classNames for node / browserify
+if (typeof module !== 'undefined' && module.exports) {
+	module.exports = classNames;
+}
+
+// safely export classNames for RequireJS
+if (typeof define !== 'undefined' && define.amd) {
+	define('classnames', [], function() {
+		return classNames;
+	});
+}
 
 },{}],2:[function(require,module,exports){
 "use strict";
 
-var _ = require("underscore"),
+var _ = require("lodash"),
     React = require("react"),
     classes = require("classnames");
 
@@ -55,10 +83,10 @@ var Option = React.createClass({
 
 module.exports = Option;
 
-},{"classnames":1,"react":undefined,"underscore":undefined}],"react-select":[function(require,module,exports){
+},{"classnames":1,"lodash":undefined,"react":undefined}],"react-select":[function(require,module,exports){
 "use strict";
 
-var _ = require("underscore"),
+var _ = require("lodash"),
     React = require("react"),
     Input = require("react-input-autosize"),
     classes = require("classnames"),
@@ -89,7 +117,11 @@ var Select = React.createClass({
     filterOption: React.PropTypes.func, // method to filter a single option: function(option, filterString)
     filterOptions: React.PropTypes.func, // method to filter the options array: function([options], filterString, [values])
     matchPos: React.PropTypes.string, // (any|start) match the start or entire string when filtering
-    matchProp: React.PropTypes.string // (any|label|value) which option property to filter on
+    matchProp: React.PropTypes.string, // (any|label|value) which option property to filter on
+
+    asyncMinLength: React.PropTypes.number, // minimum input length for async options load
+    sendSameValue: React.PropTypes.bool, // send value if not changed
+    minInputWidth: React.PropTypes.number // minimum input width
   },
 
   getDefaultProps: function () {
@@ -99,17 +131,21 @@ var Select = React.createClass({
       delimiter: ",",
       asyncOptions: undefined,
       autoload: true,
-      placeholder: "Select...",
-      noResultsText: "No results found",
+      placeholder: "Выбрать...",
+      noResultsText: "Ничего не найдено",
       clearable: true,
-      clearValueText: "Clear value",
-      clearAllText: "Clear all",
-      searchPromptText: "Type to search",
+      clearValueText: "Очистить",
+      clearAllText: "Очистить все",
+      searchPromptText: "Поиск",
       name: undefined,
       onChange: undefined,
       className: undefined,
       matchPos: "any",
-      matchProp: "any"
+      matchProp: "any",
+
+      asyncMinLength: 3,
+      sendSameValue: false,
+      minInputWidth: 5
     };
   },
 
@@ -126,7 +162,7 @@ var Select = React.createClass({
       */
       options: this.props.options,
       isFocused: false,
-      isOpen: false,
+      isOpen: this.props.isOpen || false,
       isLoading: false
     };
   },
@@ -141,9 +177,17 @@ var Select = React.createClass({
     }
   },
 
+  componentDidMount: function () {
+    if (this.state.isOpen) {
+      this.setState({ inputValue: this.props.placeholder });
+      this.refs.input.focus();
+    }
+  },
+
   componentWillUnmount: function () {
     clearTimeout(this._blurTimeout);
     clearTimeout(this._focusTimeout);
+    clearTimeout(this._hackBlurTimeout);
   },
 
   componentWillReceiveProps: function (newProps) {
@@ -231,6 +275,13 @@ var Select = React.createClass({
   selectValue: function (value) {
     if (!this.props.multi) {
       this.setValue(value);
+      // hack: blur input
+      this._hackBlurTimeout = setTimeout((function () {
+        var input = this.refs.input;
+        if (typeof input !== "undefined" && input !== null) {
+          input.blur();
+        }
+      }).bind(this), 150);
     } else if (value) {
       this.addValue(value);
     }
@@ -254,6 +305,19 @@ var Select = React.createClass({
     if (event && event.type == "mousedown" && event.button !== 0) {
       return;
     }
+
+    // hack: revert cleared value on blur
+    var inputValue;
+    if (this.state.inputValue !== "") {
+      inputValue = this.state.inputValue;
+    } else if (this.state.placeholder !== "") {
+      inputValue = this.state.placeholder;
+    }
+    this.setState({
+      clearedValue: this.state.value,
+      clearedInputValue: inputValue
+    });
+
     this.setValue(null);
   },
 
@@ -262,8 +326,10 @@ var Select = React.createClass({
   },
 
   fireChangeEvent: function (newState) {
-    if (newState.value !== this.state.value && this.props.onChange) {
-      this.props.onChange(newState.value, newState.values);
+    if (newState.value !== "" && this.props.onChange) {
+      if (this.props.sendSameValue || newState.value !== this.state.value) {
+        this.props.onChange(newState.value, newState.values);
+      }
     }
   },
 
@@ -274,7 +340,11 @@ var Select = React.createClass({
       return;
     }
     event.stopPropagation();
-    event.preventDefault();
+    if (event.target.className === "Select-control") {
+      var input = this.refs.input.refs.input.getDOMNode();
+      input.value = input.value;
+      event.preventDefault();
+    }
     if (this.state.isFocused) {
       this.setState({
         isOpen: true
@@ -300,6 +370,14 @@ var Select = React.createClass({
         isOpen: false,
         isFocused: false
       });
+
+      // hack: save cleared values
+      if (this.state.value === "" && this.state.inputValue === "") {
+        this.setState({
+          value: this.state.clearedValue,
+          inputValue: this.state.clearedInputValue
+        });
+      }
     }).bind(this), 50);
   },
 
@@ -359,14 +437,21 @@ var Select = React.createClass({
     this._optionsFilterString = event.target.value;
 
     if (this.props.asyncOptions) {
-      this.setState({
-        isLoading: true,
-        inputValue: event.target.value
-      });
-      this.loadAsyncOptions(event.target.value, {
-        isLoading: false,
-        isOpen: true
-      });
+      if (event.target.value.length >= this.props.asyncMinLength) {
+        this.setState({
+          isLoading: true,
+          inputValue: event.target.value
+        });
+        this.loadAsyncOptions(event.target.value, {
+          isLoading: false,
+          isOpen: true
+        });
+      } else {
+        this.setState({
+          isLoading: false,
+          inputValue: event.target.value
+        });
+      }
     } else {
       var filteredOptions = this.filterOptions(this.state.options);
       this.setState({
@@ -559,12 +644,22 @@ var Select = React.createClass({
     }
 
     var loading = this.state.isLoading ? React.createElement("span", { className: "Select-loading", "aria-hidden": "true" }) : null;
-    var clear = this.props.clearable && this.state.value ? React.createElement("span", { className: "Select-clear", title: this.props.multi ? this.props.clearAllText : this.props.clearValueText, "aria-label": this.props.multi ? this.props.clearAllText : this.props.clearValueText, onMouseDown: this.clearValue, onClick: this.clearValue, dangerouslySetInnerHTML: { __html: "&times;" } }) : null;
+    var clear = this.props.clearable && this.state.isOpen && (this.state.value || this.state.inputValue) ? React.createElement("span", { className: "Select-clear", title: this.props.multi ? this.props.clearAllText : this.props.clearValueText, "aria-label": this.props.multi ? this.props.clearAllText : this.props.clearValueText, onMouseDown: this.clearValue, onClick: this.clearValue, dangerouslySetInnerHTML: { __html: "" } }) : null;
     var menu = this.state.isOpen ? React.createElement(
       "div",
       { ref: "menu", onMouseDown: this.handleMouseDown, className: "Select-menu" },
       this.buildMenu()
     ) : null;
+
+    var commonProps = {
+      ref: "input",
+      className: "Select-input",
+      tabIndex: this.props.tabIndex || 0,
+      onFocus: this.handleInputFocus,
+      onBlur: this.handleInputBlur,
+      minWidth: this.props.minInputWidth
+    };
+    var input = React.createElement(Input, React.__spread({ value: this.state.inputValue, onChange: this.handleInputChange }, commonProps));
 
     return React.createElement(
       "div",
@@ -574,8 +669,7 @@ var Select = React.createClass({
         "div",
         { className: "Select-control", ref: "control", onKeyDown: this.handleKeyDown, onMouseDown: this.handleMouseDown, onTouchEnd: this.handleMouseDown },
         value,
-        React.createElement(Input, { className: "Select-input", tabIndex: this.props.tabIndex, ref: "input", value: this.state.inputValue, onFocus: this.handleInputFocus, onBlur: this.handleInputBlur, onChange: this.handleInputChange, minWidth: "5" }),
-        React.createElement("span", { className: "Select-arrow" }),
+        input,
         loading,
         clear
       ),
@@ -587,4 +681,4 @@ var Select = React.createClass({
 
 module.exports = Select;
 
-},{"./Value":2,"classnames":1,"react":undefined,"react-input-autosize":undefined,"underscore":undefined}]},{},[]);
+},{"./Value":2,"classnames":1,"lodash":undefined,"react":undefined,"react-input-autosize":undefined}]},{},[]);
