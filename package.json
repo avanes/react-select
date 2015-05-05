@@ -13,7 +13,7 @@
     "classnames": "^1.0.0",
     "react": "^0.12.2",
     "react-input-autosize": "^0.3.1",
-    "underscore": "^1.7.0"
+    "lodash": "^3.7.0"
   },
   "devDependencies": {
     "6to5ify": "^3.1.2",
@@ -39,7 +39,7 @@
   "browserify-shim": {
     "react": "global:React",
     "react-input-autosize": "global:AutosizeInput",
-    "underscore": "global:_"
+    "lodash": "global:_"
   },
   "scripts": {
     "test": "echo \"no tests yet\" && exit 0"

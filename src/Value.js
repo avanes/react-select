@@ -1,4 +1,4 @@
-var _ = require('underscore'),
+var _ = require('lodash'),
 	React = require('react'),
 	classes = require('classnames');
 
