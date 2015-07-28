@@ -2,9 +2,9 @@
 (function (global){
 "use strict";
 
-var _ = (typeof window !== "undefined" ? window._ : typeof global !== "undefined" ? global._ : null),
-    React = (typeof window !== "undefined" ? window.React : typeof global !== "undefined" ? global.React : null),
-    Input = (typeof window !== "undefined" ? window.AutosizeInput : typeof global !== "undefined" ? global.AutosizeInput : null),
+var _ = (typeof window !== "undefined" ? window['_'] : typeof global !== "undefined" ? global['_'] : null),
+    React = (typeof window !== "undefined" ? window['React'] : typeof global !== "undefined" ? global['React'] : null),
+    Input = (typeof window !== "undefined" ? window['AutosizeInput'] : typeof global !== "undefined" ? global['AutosizeInput'] : null),
     classes = require("classnames"),
     Value = require("./Value");
 
@@ -193,8 +193,8 @@ var Select = React.createClass({
       this.setValue(value);
       // hack: blur input
       this._hackBlurTimeout = setTimeout((function () {
-        var input = this.refs.input;
-        if (typeof input !== "undefined" && input !== null) {
+        var input = this.getDOMNode().querySelector("input");
+        if (input !== null) {
           input.blur();
         }
       }).bind(this), 150);
@@ -647,8 +647,8 @@ if (typeof define !== 'undefined' && define.amd) {
 (function (global){
 "use strict";
 
-var _ = (typeof window !== "undefined" ? window._ : typeof global !== "undefined" ? global._ : null),
-    React = (typeof window !== "undefined" ? window.React : typeof global !== "undefined" ? global.React : null),
+var _ = (typeof window !== "undefined" ? window['_'] : typeof global !== "undefined" ? global['_'] : null),
+    React = (typeof window !== "undefined" ? window['React'] : typeof global !== "undefined" ? global['React'] : null),
     classes = require("classnames");
 
 var Option = React.createClass({
