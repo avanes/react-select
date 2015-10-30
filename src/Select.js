@@ -192,9 +192,11 @@ var Select = React.createClass({
       this.setValue(value);
       // hack: blur input
       this._hackBlurTimeout = setTimeout((function(){
-        var input = this.getDOMNode().querySelector('input');
-        if (input !== null) {
-          input.blur();
+        if (this.isMounted()) {
+          var input = this.getDOMNode().querySelector('input');
+          if (input !== null) {
+            input.blur();
+          }
         }
       }).bind(this), 150);
     } else if (value) {
