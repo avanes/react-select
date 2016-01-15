@@ -12,6 +12,7 @@
   "dependencies": {
     "classnames": "^1.0.0",
     "react": "^0.14.6",
+    "react-dom": "^0.14.6",
     "react-input-autosize": "^0.6.6",
     "lodash": "^3.7.0"
   },

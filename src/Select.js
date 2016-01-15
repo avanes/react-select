@@ -1,5 +1,6 @@
 var _ = require('lodash'),
   React = require('react'),
+  ReactDOM = require('react-dom'),
   Input = require('react-input-autosize'),
   classes = require('classnames'),
   Value = require('./Value');
@@ -127,8 +128,8 @@ var Select = React.createClass({
 
     if (this._focusedOptionReveal) {
       if (this.refs.focused && this.refs.menu) {
-        var focusedDOM = this.refs.focused.getDOMNode();
-        var menuDOM = this.refs.menu.getDOMNode();
+        var focusedDOM = this.refs.focused;
+        var menuDOM = this.refs.menu;
         var focusedRect = focusedDOM.getBoundingClientRect();
         var menuRect = menuDOM.getBoundingClientRect();
 
@@ -195,7 +196,7 @@ var Select = React.createClass({
       // hack: blur input
       this._hackBlurTimeout = setTimeout((function(){
         if (this.isMounted()) {
-          var input = this.getDOMNode().querySelector('input');
+          var input = ReactDOM.findDOMNode(this).querySelector('input');
           if (input !== null) {
             input.blur();
           }
@@ -260,7 +261,7 @@ var Select = React.createClass({
     }
     event.stopPropagation();
     if (event.target.className === "Select-control") {
-      var input = this.refs.input.refs.input.getDOMNode()
+      var input = this.refs.input.refs.input;
       input.value = input.value;
       event.preventDefault();
     }
