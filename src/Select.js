@@ -91,6 +91,7 @@ var Select = React.createClass({
   },
 
   componentDidMount: function() {
+    this._mounted = true;
     if (this.state.isOpen) {
       this.setState({ inputValue: this.props.placeholder });
       this.refs.input.focus();
@@ -101,6 +102,7 @@ var Select = React.createClass({
     clearTimeout(this._blurTimeout);
     clearTimeout(this._focusTimeout);
     clearTimeout(this._hackBlurTimeout);
+    this._mounted = false;
   },
 
   componentWillReceiveProps: function(newProps) {
@@ -389,10 +391,12 @@ var Select = React.createClass({
       var cacheKey = input.slice(0, i);
       if (this._optionsCache[cacheKey] && (input === cacheKey || this._optionsCache[cacheKey].complete)) {
         var options = this._optionsCache[cacheKey].options;
-        this.setState(_.extend({
-          options: options,
-          filteredOptions: this.filterOptions(options)
-        }, state));
+        if (this._mounted) {
+          this.setState(_.extend({
+            options: options,
+            filteredOptions: this.filterOptions(options)
+          }, state));
+        }
         return;
       }
     }
@@ -406,10 +410,12 @@ var Select = React.createClass({
         return;
       }
 
-      this.setState(_.extend({
-        options: data.options,
-        filteredOptions: this.filterOptions(data.options)
-      }, state));
+      if (this._mounted) {
+        this.setState(_.extend({
+          options: data.options,
+          filteredOptions: this.filterOptions(data.options)
+        }, state));
+      }
     }).bind(this));
   },
 
