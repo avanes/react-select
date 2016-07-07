@@ -1,5 +1,6 @@
 var React = require('react'),
-	Select = require('react-select');
+  ReactDOM = require('react-dom'),
+	Select = require('../../src/Select');
 
 var STATES = require('./data/states');
 
@@ -130,7 +131,7 @@ var MultiSelectField = React.createClass({
 });
 
 
-React.render(
+ReactDOM.render(
 	<div>
 		<StatesField />
 		<StatesField label="States (non-searchable):" searchable={false} />
