@@ -12,7 +12,7 @@
   "dependencies": {
     "classnames": "^1.0.0",
     "fbjs": "^0.8.3",
-    "lodash": "^3.7.0",
+    "lodash": "^4.14.0",
     "react": "^0.14.0 || ^15.0.0-0",
     "react-dom": "^0.14.0 || ^15.0.0-0",
     "react-input-autosize": "^1.0.0"

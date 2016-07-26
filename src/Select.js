@@ -179,7 +179,7 @@ var Select = React.createClass({
     }
 
     return values.map(function(val) {
-      return ('string' === typeof val) ? val = _.findWhere(options, { value: val }) || { value: val, label: val } : val;
+      return ('string' === typeof val) ? val = _.find(options, { value: val }) || { value: val, label: val } : val;
     }.bind(this));
 
   },
@@ -427,11 +427,11 @@ var Select = React.createClass({
     if (this.props.filterOptions) {
       return this.props.filterOptions.call(this, options, filterValue, exclude);
     } else {
-      var filterOption = function (op) {
-        if (this.props.multi && _.contains(exclude, op.value)) return false;
+      var filterOption = _.bind(function (op) {
+        if (this.props.multi && _.includes(exclude, op.value)) return false;
         if (this.props.filterOption) return this.props.filterOption.call(this, op, filterValue);
         return !filterValue || this.props.matchPos === "start" ? this.props.matchProp !== "label" && op.value.toLowerCase().substr(0, filterValue.length) === filterValue || this.props.matchProp !== "value" && op.label.toLowerCase().substr(0, filterValue.length) === filterValue : this.props.matchProp !== "label" && op.value.toLowerCase().indexOf(filterValue.toLowerCase()) >= 0 || this.props.matchProp !== "value" && op.label.toLowerCase().indexOf(filterValue.toLowerCase()) >= 0;
-      };
+      }, this);
       return _.filter(options, filterOption, this);
     }
   },
@@ -526,7 +526,7 @@ var Select = React.createClass({
           mouseDown = this.selectValue.bind(this, op);
 
       return <div ref={ref} key={'option-' + op.value} className={optionClass} onMouseEnter={mouseEnter} onMouseLeave={mouseLeave} onMouseDown={mouseDown} onClick={mouseDown}>{op.label}</div>;
-    }, this);
+    }.bind(this), this);
 
     return ops.length ? ops : (
       <div className="Select-noresults">
