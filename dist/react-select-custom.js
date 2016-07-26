@@ -1,11 +1,13 @@
+(function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Select = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
+(function (global){
 'use strict';
 
 var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
 
-var _ = require('lodash'),
-    React = require('react'),
+var _ = (typeof window !== "undefined" ? window['_'] : typeof global !== "undefined" ? global['_'] : null),
+    React = (typeof window !== "undefined" ? window['React'] : typeof global !== "undefined" ? global['React'] : null),
     ReactDOM = require('react-dom'),
-    Input = require('react-input-autosize'),
+    Input = (typeof window !== "undefined" ? window['AutosizeInput'] : typeof global !== "undefined" ? global['AutosizeInput'] : null),
     classes = require('classnames'),
     Value = require('./Value');
 
@@ -614,3 +616,49 @@ var Select = React.createClass({
 });
 
 module.exports = Select;
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"./Value":2,"classnames":undefined,"react-dom":undefined}],2:[function(require,module,exports){
+(function (global){
+'use strict';
+
+var _ = (typeof window !== "undefined" ? window['_'] : typeof global !== "undefined" ? global['_'] : null),
+    React = (typeof window !== "undefined" ? window['React'] : typeof global !== "undefined" ? global['React'] : null),
+    classes = require('classnames');
+
+var Option = React.createClass({
+
+	displayName: 'Value',
+
+	propTypes: {
+		label: React.PropTypes.string.isRequired
+	},
+
+	blockEvent: function blockEvent(event) {
+		event.stopPropagation();
+	},
+
+	render: function render() {
+		return React.createElement(
+			'div',
+			{ className: 'Select-item' },
+			React.createElement(
+				'span',
+				{ className: 'Select-item-icon', onMouseDown: this.blockEvent, onClick: this.props.onRemove, onTouchEnd: this.props.onRemove },
+				'×'
+			),
+			React.createElement(
+				'span',
+				{ className: 'Select-item-label' },
+				this.props.label
+			)
+		);
+	}
+
+});
+
+module.exports = Option;
+
+}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
+},{"classnames":undefined}]},{},[1])(1)
+});
